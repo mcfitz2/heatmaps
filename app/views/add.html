@@ -1,0 +1,47 @@
+{{#rides.length}}
+<table class="table">
+{{#rides}}
+<tr>
+  <td>
+    <h4>{{date}}</h4>
+  </td>
+  <td class="right">
+    <h4>{{distance}}mi</h4>
+  </td>
+  <td class="right">
+    <h4>{{duration}}</h4>
+  </td>
+  
+  <td class="right">
+    <a id="{{datestring}}" class="btn has-spinner btn-primary" href="#">
+      <span class="spinner">
+	<i class="glyphicon glyphicon-refresh"></i>
+      </span>
+      Add
+    </a>
+  </td>  
+</tr>
+
+{{/rides}}
+</table>
+{{#rides}}
+<script>
+  $(function() {
+//    $("#{{datestring}}").toggleClass("btn-primary").addClass("btn-inverse");
+    $("#{{datestring}}").on("click", function() {
+      $("#{{datestring}}").toggleClass("active")
+      $.post("/hook/{{datestring}}", function(data, textStatus) {
+        console.log("posted {{datestring}}");
+        $("#{{datestring}}").toggleClass("btn-inverse").toggleClass("active").addClass("btn-success");
+      });
+    });
+  });
+  
+</script>
+{{/rides}}
+{{/rides.length}}
+{{^rides.length}}
+<div>
+  <p>You have no rides to submit.</p>
+</div>
+{{/rides.length}}

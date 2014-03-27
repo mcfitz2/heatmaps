@@ -1,0 +1,40 @@
+<style>
+  .map-canvas {
+  height: 700px;
+  width: 700px;
+  }
+  .regen {
+  position:relative;
+  left:10px;
+  top:-3px;
+  }
+  #map-container {
+  display:none;
+  }
+</style>
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <h4>Connect your accounts:</h4>
+      <a class="btn" href="/auth/moves" alt="Connect your Moves account"><img {{#user.moves}}class="darken"{{/user.moves}} width="48px" height="48px" src="/public/img/moves.png"></img></a>
+      <a class="btn" href="/auth/strava" alt="Connect your Strava account"><img {{#user.strava}}class="darken"{{/user.strava}} width="48px" height="48px" src="/public/img/strava.png"></img></a>
+    </div>
+  </div>
+</div>
+<div id="map-container" class="container">
+  <div class="row">
+    <div class="col-md-10">
+      <span><h3 style="display:inline">Heatmap</h3><a class="regen btn btn-xs btn-primary">Regenerate</a></span>
+      <div id="m1" class="map-canvas"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-10">
+      <span><h3 style="display:inline">Location Plot</h3><a class="regen btn btn-xs btn-primary">Regenerate</a></span>
+      <div id="m2" class="map-canvas"></div>
+    </div>
+  </div>
+</div>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=visualization"></script>
+<script type="text/javascript" src="/public/js/heatmap-init.js"></script>
+  

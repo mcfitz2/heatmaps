@@ -1,0 +1,33 @@
+<div class="col-md-5 well">
+<form method="POST", action="/profile/settings">
+  <label>IU Username</label>
+  <input name="iu_username", type="text", value="{{user.iu_username}}">
+  <ul class="list-unstyled">
+    <li>
+      <label>Work Calendar</label>
+	<select name="work_calendar">
+          {{#calendars}}
+          <option value="{{id}}">{{summary}}</option>
+	  {{/calendars}}
+	</select>
+    </li>
+    <li>
+      <label>Subs Calendar</label>
+	<select name="subs_calendar">
+          {{#calendars}}
+          <option value="{{id}}">{{summary}}</option>
+	  {{/calendars}}
+	</select>
+    </li>
+    <li>
+      <label "for"="avoid-select">Calendars to Avoid</label>
+      <select id="avoid-select", name="avoid_calendars", multiple>
+	{{#calendars}}
+	<option value="{{id}}">{{summary}}</option>
+	{{/calendars}}
+      </select>
+    </li>
+  </ul>
+  <input type="submit", value="submit", name="submit">
+</form>
+</div>

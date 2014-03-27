@@ -1,0 +1,38 @@
+<h4> Hello, {{user.email}}!</h4>
+<hr>
+<div class="row">
+<div class="col-md-4">
+<h4>Connect your accounts:</h4>
+<a href="/auth/moves" alt="Connect your Moves account"><img {{#user.moves}}class="darken"{{/user.moves}} width="48px" height="48px" src="/public/img/moves.png"></img></a>
+<a href="/auth/strava" alt="Connect your Strava account"><img {{#user.strava}}class="darken"{{/user.strava}} width="48px" height="48px" src="/public/img/strava.png"></img></a>
+</div>
+<div class="col-md-3">
+{{#user.strava}}
+<h3>Strava</h3>
+<hr>
+<div class="avatar">
+  <img alt="{{strava.firstname}} {{strava.lastname}}" src="{{strava.profile}}" title="{{strava.firstname}} {{strava.lastname}}">
+</div>
+<h3>{{strava.firstname}} {{strava.lastname}}</h3>
+<p class="location">{{strava.city}}, {{strava.state}}</p>
+<h3>Stats</h3>
+<div>
+<table class="table table-condensed">
+  <tbody>
+    <tr>
+      <th>Distance</th>
+      <td>{{strava.totalDistance}} mi</td>
+    </tr>
+    <tr>
+      <th>Rides</th>
+      <td>{{strava.rides}}</td>
+    </tr>
+    <tr>
+      <th>Biggest Ride</th>
+      <td><a href="{{strava.longestRide.url}}" >{{strava.longestRide.distance}} mi</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+{{/user.strava}}
+</div>

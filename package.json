@@ -1,0 +1,29 @@
+{
+  "name": "heatmaps",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "dependencies": {
+    "passport-local": "latest",
+    "passport-local-mongoose": "latest",
+    "bcrypt": "latest",
+    "connect-mongo": "latest",
+    "moves": "git+https://github.com/mcfitz2/node-moves.git",
+    "passport-strava": "git+https://github.com/mcfitz2/passport-strava.git",
+    "strava": "git+https://github.com/mcfitz2/node-strava.git",
+    "hogan-express": "latest",
+    "moment": "latest",
+    "async": "latest",
+    "express": "3.1.0",
+    "mongodb": "*",
+    "nodemon": "*",
+    "passport": "*",
+    "mongoose": "~3.6.4",
+    "hjs": "*",
+    "passport-moves": "git+https://github.com/mcfitz2/passport-moves.git",
+
+    "request": "~2.33.0"
+  }
+}
