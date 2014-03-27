@@ -37,15 +37,15 @@ function mkDates(last_post, excludes) {
 
 module.exports = function(app) {
     app.get("/heatmap/view", isAuthenticated, function(req, res) {
-	Heatmap.findOne({owner:req.user._id}, function(err, map) {
+/*	Heatmap.findOne({owner:req.user._id}, function(err, map) {
 	    res.locals.points = map.points;
 	    res.locals.splits = map.splits;
 	    res.locals.center_lat = map.points[0].lat;
 	    res.locals.center_lon = map.points[0].lon;
 	    console.log(res.locals.center_lat);
-	    console.log(res.locals.center_lon);
-	    res.render("heatmap.html");
-	});
+	    console.log(res.locals.center_lon);*/
+	res.render("heatmap.html");
+//	});
     });
     app.get("/heatmap/json", isAuthenticated, function(req, res) {
 	Heatmap.findOne({owner:req.user._id}, function(err, map) {
