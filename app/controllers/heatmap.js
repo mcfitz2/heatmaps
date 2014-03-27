@@ -37,15 +37,7 @@ function mkDates(last_post, excludes) {
 
 module.exports = function(app) {
     app.get("/heatmap/view", isAuthenticated, function(req, res) {
-/*	Heatmap.findOne({owner:req.user._id}, function(err, map) {
-	    res.locals.points = map.points;
-	    res.locals.splits = map.splits;
-	    res.locals.center_lat = map.points[0].lat;
-	    res.locals.center_lon = map.points[0].lon;
-	    console.log(res.locals.center_lat);
-	    console.log(res.locals.center_lon);*/
 	res.render("heatmap.html");
-//	});
     });
     app.get("/heatmap/json", isAuthenticated, function(req, res) {
 	Heatmap.findOne({owner:req.user._id}, function(err, map) {
@@ -54,36 +46,63 @@ module.exports = function(app) {
     });
     app.get("/heatmap/generate", isAuthenticated, function(req, res) {
 	var user = req.user;
-	var moves = new Moves({
-	    client_id: process.env.MOVES_CLIENT_ID,
-	    client_secret: process.MOVES_CLIENT_SECRET,
-	    redirect_uri: process.MOVES_CALLBACK_URL,
-	    access_token: user.moves.access_token,
-	    refresh_token: user.moves.refresh_token
-	});
-	var strava = new Strava({
-	    client_id: process.env.STRAVA_CLIENT_ID,
-	    client_secret: process.STRAVA_CLIENT_SECRET,
-	    redirect_uri: process.STRAVA_CALLBACK_URL,
-	    access_token: user.strava.access_token,
-	    refresh_token: user.strava.refresh_token
-	});
-	var Allpoints = [];
-	function getDatasets(streams) {
-	    var ret = {};
-	    for (var i in streams) {
-		ret[streams[i].type] = streams[i];
-	    }
-	    return ret;
+	var fetchers = [];
+	if (user.moves) {
+	    var moves = new Moves({
+		client_id: process.env.MOVES_CLIENT_ID,
+		client_secret: process.MOVES_CLIENT_SECRET,
+		redirect_uri: process.MOVES_CALLBACK_URL,
+		access_token: user.moves.access_token,
+		refresh_token: user.moves.refresh_token
+	    });
+	    fetchers.push(function(callback) {
+		moves.user.storyline.all({trackPoints:true}, function(err, res) {
+		    async.reduce(res, [], function(memo, item, callback) {
+			callback(null, memo.concat(item.segments));
+		    }, function(err, result) {
+			async.reduce(result, [], function(memo, item, callback) {
+			    if (item && item.activities) {
+				callback(null, memo.concat(item.activities));
+			    } else {
+				callback(null, memo);
+			    }
+			}, function(err, result) {
+			    async.reduce(result, [], function(memo, item, callback) {
+				callback(null, memo.concat(item.trackPoints.map(function(item) {
+				    return {
+					lat:item.lat, 
+					lon:item.lon, 
+					time:parseInt(moment(item.time, "YYYYMMDDTHHmmssZ").format("X"), 10)
+				    };
+				})));
+			    }, function(err, result) {
+				callback(err, result);
+			    });
+			});
+		    });
+		});
+	    });
 	}
-	    
-	async.parallel([
-	    function(callback) {
+	if (user.strava) {
+	    var strava = new Strava({
+		client_id: process.env.STRAVA_CLIENT_ID,
+		client_secret: process.STRAVA_CLIENT_SECRET,
+		redirect_uri: process.STRAVA_CALLBACK_URL,
+		access_token: user.strava.access_token,
+		refresh_token: user.strava.refresh_token
+	    });
+	    fetchers.push(function(callback) {
 		strava.athlete.activities.get({paginated:true}, function(err, activities) {
 		    console.log(activities.length);
 		    async.concat(activities, function(activity, callback) {
 			strava.activities.streams.get(activity.id, ["time", "latlng"], {}, function(err, stream) {
-			    var dataSets = getDatasets(stream);
+			    var dataSets = 	function(streams) {
+				var ret = {};
+				for (var i in streams) {
+				    ret[streams[i].type] = streams[i];
+				}
+				return ret;
+			    }(stream);
 			    var start = moment(activity.start_date);
 			    if (dataSets.latlng && dataSets.time) {
 				var ret = dataSets.latlng.data.map(function(item, index) {
@@ -100,31 +119,11 @@ module.exports = function(app) {
 			});
 		    }, callback);
 		});
-	    }, function(callback) {
-		moves.user.storyline.all({trackPoints:true}, function(err, res) {
-		    async.reduce(res, [], function(memo, item, callback) {
-			callback(null, memo.concat(item.segments));
-		    }, function(err, result) {
-			async.reduce(result, [], function(memo, item, callback) {
-			    if (item && item.activities) {
-				callback(null, memo.concat(item.activities));
-			    } else {
-				callback(null, memo);
-			    }
-			}, function(err, result) {
-			    async.reduce(result, [], function(memo, item, callback) {
-				callback(null, memo.concat(item.trackPoints.map(function(item) {
-//				    console.log(item.time);
-				    return {lat:item.lat, lon:item.lon, time:parseInt(moment(item.time, "YYYYMMDDTHHmmssZ").format("X"))};
-				})));
-			    }, function(err, result) {
-//				console.log(result);
-				callback(err, result);
-			    });
-			});
-		    });
-		});
-	    }], function(err, results) {
+	    });
+	}
+	var Allpoints = [];
+	    
+	async.parallel(fetchers, function(err, results) {
 		points = results.reduce(function(a, b) {
 		    return a.concat(b);
 		}).sort(function(a, b) {return a.time - b.time});

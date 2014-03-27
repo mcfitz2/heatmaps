@@ -1,7 +1,14 @@
 var map, pointarray, heatmap;
+function loading() {
+    $(".map-canvas").html('<span class="icon-refresh-animate refresh-icon glyphicon glyphicon-refresh"></span>Regenerating...');
+    $("#regen").html("Regenerating...");
+}
+function stopLoading() {
+    $("#regen").html("Regenerate");
+}
 function initialize() {
     $.getJSON("/heatmap/json", function(data) {
-	if (data.splits.length > 0 && data.points.length > 0) {
+	if (data && data.splits && data.points && data.splits.length > 0 && data.points.length > 0) {
 	    var mapOptions = {
 		zoom: 13,
 		center: new google.maps.LatLng(data.points[0].lat, data.points[0].lon),
@@ -30,16 +37,28 @@ function initialize() {
 		    strokeWeight: 2
 		}).setMap(map2);
 	    }
-	    $("#map-container").show();
+	} else {
+	    $("#regen").html("Generating...").show();
+	    loading();
+	    $.get("/heatmap/generate", function(data, textStatus) {
+		initialize();
+		stopLoading();
+	    }).fail(function() {
+		$("#regen").html("Regenerate");
+		$(".map-canvas").html("<p>There was an issue generating your maps. Please try again.</p>");
+	    });
 	}
     });
 }	
 google.maps.event.addDomListener(window, 'load', initialize);
-$(".regen").on("click", function(el) {
+$("#regen").on("click", function(el) {
     var btn = $(this);
-    btn.html("Regenerating...");
+    loading();
     $.get("/heatmap/generate", function(data, textStatus) {
-	btn.html("Regenerate");
 	initialize();
+	stopLoading();
+    }).fail(function() {
+	$("#regen").html("Regenerate");
+	$(".map-canvas").html("<p>There was an issue generating your maps. Please try again.</p>");
     });
 });
