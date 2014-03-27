@@ -50,18 +50,7 @@ module.exports = function (app) {
 	callbackURL: process.env.MOVES_CALLBACK_URL,
 	passReqToCallback:true
     }, callback));
-    app.passport.use(new FoursquareStrategy({
-	clientID: process.env.FOURSQUARE_CLIENT_ID,
-	clientSecret: process.env.FOURSQUARE_CLIENT_SECRET,
-	callbackURL: process.env.FOURSQUARE_CALLBACK_URL,
-	passReqToCallback:true
-    }, callback));
-    app.passport.use(new DropboxStrategy({
-	consumerKey: process.env.DROPBOX_CLIENT_ID,
-	consumerSecret: process.env.DROPBOX_CLIENT_SECRET,
-	callbackURL: process.env.DROPBOX_CALLBACK_URL,
-	passReqToCallback:true
-    }, callback));
+
     app.passport.use(User.createStrategy());
     app.passport.use(new StravaStrategy({
 	clientID: process.env.STRAVA_CLIENT_ID,
