@@ -3,8 +3,6 @@ var mongoose = require('mongoose')
 , moment = require("moment")
 , MovesStrategy = require('passport-moves').Strategy
 , StravaStrategy = require('passport-strava').Strategy
-, DropboxStrategy = require('passport-dropbox').Strategy
-, FoursquareStrategy = require('passport-foursquare').Strategy
 , User = mongoose.model('User')
 , LocalStrategy = require("passport-local").Strategy;
 function callback(req, accessToken, refreshToken, profile, done) {
