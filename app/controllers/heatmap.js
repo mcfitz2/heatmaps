@@ -34,7 +34,30 @@ function mkDates(last_post, excludes) {
     } 
     return arr;
 }
+if (Number.prototype.toRad === 'undefined') {
+    Number.prototype.toRad = function() {
+	return this * Math.PI / 180;
+    };
+}
+function metrics(a, b) {
+    var lat1 = parseFloat(a.lat), lat2 = parseFloat(b.lat), lon1 = parseFloat(a.lon), lon2 = parseFloat(b.lon);
+    var R = 3958.75587; //miles
+    var dLat = (lat2-lat1)* Math.PI / 180;
+    var dLon = (lon2-lon1)* Math.PI / 180;
+    lat1 = lat1* Math.PI / 180;
+    lat2 = lat2* Math.PI / 180;
 
+    var x = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+    var c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x)); 
+    return {distance:R * c, time:Math.abs(a.time-b.time), speed:(R*c)/Math.abs(a.time-b.time)};
+}
+function color(value) {
+    var colors = ["#9106D3", "#AA01BE", "#C101A7", "#D5078E", "#E61175", "#F31F5C", "#FB3244", "#FE472F", "#FD5F1D", "#F6780F", "#EA9106", "#DBAA01", "#C7C101", "#B1D507", "#99E611"];
+    return colors[(function(from, to, s) {
+	return to[0] + (s - from[0]) * (to[1] - to[0]) / (from[1] - from[0]);
+    }([0, 100], [0, 15], value))];
+}
 module.exports = function(app) {
     app.get("/heatmap/view", isAuthenticated, function(req, res) {
 	res.render("heatmap.html");
@@ -124,30 +147,35 @@ module.exports = function(app) {
 	var Allpoints = [];
 	    
 	async.parallel(fetchers, function(err, results) {
-		points = results.reduce(function(a, b) {
-		    return a.concat(b);
-		}).sort(function(a, b) {return a.time - b.time});
-		function split(points) {
-		    var ret = [];
-		    var chunk = [];
-		    for (var i = 1; i < points.length; i++) {
-			if (((points[i].time-points[i-1].time) > 4*60) && chunk.length > 0) {
-			    ret.push({split:chunk});
-			    chunk = [points[i]];
-			} else {
-			    chunk.push(points[i]);
-			}
+	    points = results.reduce(function(a, b) {
+		return a.concat(b);
+	    }).sort(function(a, b) {return a.time - b.time});
+	    function split(points) {
+		var ret = [];
+		var chunk = [];
+		var max_speed = 0;
+		for (var i = 1; i < points.length; i++) {
+		    var measurements = metrics(points[i], points[i-1]);
+		    if ((measurements.time > 4*60) || (measurements.speed > (100/3600))) {
+			ret.push({split:chunk});
+			chunk = [points[i]];
+			
+		    } else {
+			chunk.push(points[i]);
 		    }
-		    return ret;
 		}
-		var hm = {
-		    owner:user._id,
-		    points:points,
-		    splits:split(points)
-		};
+		return ret;
+	    }
+	    var hm = {
+		owner:user._id,
+		points:points,
+		splits:split(points)
+	    };
+	    if (hm.points.length > 0 && hm.splits.length > 0) {
 		Heatmap.update({owner:user._id}, hm, {upsert:true}, function(err, doc) {
 		    res.send(200);
 		});
-	    });
+	    }
+	});
     });
 };

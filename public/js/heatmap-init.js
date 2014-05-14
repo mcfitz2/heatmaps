@@ -1,4 +1,4 @@
-var map, pointarray, heatmap;
+var map, pointarray, heatmap, service = new google.maps.DirectionsService();
 function loading() {
     $(".map-canvas").html('<span class="icon-refresh-animate refresh-icon glyphicon glyphicon-refresh"></span>Regenerating...');
     $("#regen").html("Regenerating...");
@@ -7,6 +7,7 @@ function stopLoading() {
     $("#regen").html("Regenerate");
 }
 function initialize() {
+    $(".map-canvas").html('<span class="icon-refresh-animate refresh-icon glyphicon glyphicon-refresh"></span>Regenerating...');
     $.getJSON("/heatmap/json", function(data) {
 	if (data && data.splits && data.points && data.splits.length > 0 && data.points.length > 0) {
 	    var mapOptions = {
@@ -27,14 +28,18 @@ function initialize() {
 	    
 	    heatmap.setMap(map);
 	    for (var i = 0; i < data.splits.length; i++) {
+		var path = data.splits[i].split.filter(function(item) {
+		    return true; //(item.time < 1393697482);
+		}).map(function(item) {
+		    return new google.maps.LatLng(item.lat, item.lon);
+		});
+		console.log(data.splits[i].split[0]);
 		new google.maps.Polyline({
-		    path: data.splits[i].split.map(function(item) {
-			return new google.maps.LatLng(item.lat, item.lon);
-		    }),
-		    geodesic: true,
-		    strokeColor: '#FF0000',
-		    strokeOpacity: 1.0,
-		    strokeWeight: 2
+		    path: path,
+//		    geodesic: true,
+		    strokeColor: "#0000FF",
+		    strokeOpacity: 0.5,
+		    strokeWeight: 1
 		}).setMap(map2);
 	    }
 	} else {
